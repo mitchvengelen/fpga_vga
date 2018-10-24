@@ -64,6 +64,19 @@ begin
     -- pop side of fifo
     empty <= not s_pop_state;
 
+    --binary to gray code -> for use in push controller
+    s_pop_gray_pointer <= s_pop_pointer(data_depth - 1 downto 0) xor ('0' & s_pop_pointer(data_depth - 1 downto 1));
+
+    --gray code to binary -> for use in pop controller
+    process(s_pop_push_pointer, s_pop_synchronizer_s2)
+    begin
+        s_pop_push_pointer(data_depth - 1) <= s_pop_synchronizer_s2(data_depth - 1);
+
+        for I in data_depth - 2 to 0 loop
+            s_pop_push_pointer(I) <= s_pop_synchronizer_s2(I) xor s_pop_push_pointer(I + 1);
+        end loop;
+    end process;
+
     process(clock_pop, reset)
     begin
         if reset = '1' then
@@ -72,6 +85,8 @@ begin
 
             s_pop_synchronizer_s1 <= (others => '0');
             s_pop_synchronizer_s2 <= (others => '0');
+
+            data_out <= (others => '0');
         elsif rising_edge(clock_pop) then
             if s_pop_state = '0' then
                 --FIFO is empty
@@ -90,25 +105,74 @@ begin
 
                 if pop = '1' then
                     s_pop_pointer <= s_pop_pointer + 1;
+                    data_out <= ram(to_integer(unsigned(s_pop_pointer)));
                 else
                     s_pop_pointer <= s_pop_pointer;
                 end if;
             end if;
-
-            --binary to gray code -> for use in push controller
-            s_pop_gray_pointer <= s_pop_pointer(data_depth - 1 downto 0) xor ('0' & s_pop_pointer(data_depth - 1 downto 1));
-
-            --gray code to binary -> for use in pop controller
-                s_pop_push_pointer(data_depth - 1) <= s_pop_synchronizer_s2(data_depth - 1);
-            for I in data_depth - 2 to 0 loop
-                s_pop_push_pointer(I) <= s_pop_synchronizer_s2(I) xor s_pop_push_pointer(I + 1);
-            end loop;
 
             --meta stable input
             s_pop_synchronizer_s1 <= s_push_gray_pointer;
 
             --stable 99.9999% of the time
             s_pop_synchronizer_s2 <= s_pop_synchronizer_s1;
+        end if;
+    end process;
+
+    -- push side of fifo
+    full <= s_push_state;
+
+    --binary to gray code -> for use in push controller
+    s_push_gray_pointer <= s_push_pointer(data_depth - 1 downto 0) xor ('0' & s_push_pointer(data_depth - 1 downto 1));
+
+    --gray code to binary -> for use in pop controller
+    process(s_push_pop_pointer, s_push_synchronizer_s2)
+    begin
+        s_push_pop_pointer(data_depth - 1) <= s_push_synchronizer_s2(data_depth - 1);
+
+        for I in data_depth - 2 to 0 loop
+            s_push_pop_pointer(I) <= s_push_synchronizer_s2(I) xor s_push_pop_pointer(I + 1);
+        end loop;
+    end process;
+
+    process(clock_push, reset)
+    begin
+        if reset = '1' then
+            s_push_pointer <= (others => '0');
+            s_push_state <= '0';
+
+            s_push_synchronizer_s1 <= (others => '0');
+            s_push_synchronizer_s2 <= (others => '0');
+
+        elsif rising_edge(clock_push) then
+            if s_push_state = '0' then
+                --fifo is not full
+                if push = '1' and s_push_pointer + 1 = s_push_pop_pointer then
+                    s_push_state <= '1';
+                else
+                    s_push_state <= '0';
+                end if;
+
+                if push = '1' then
+                    s_push_pointer <= s_push_pointer + 1;
+                    ram(to_integer(unsigned(s_push_pointer))) := data_in;
+                else
+                    s_push_pointer <= s_push_pointer;
+                end if;
+            else
+                --fifo is full
+                if s_push_pointer = s_push_pop_pointer then
+                    s_push_state <= '1';
+                else
+                    s_push_state <= '0';
+                end if;
+            end if;
+
+            --meta stable input
+            s_push_synchronizer_s1 <= s_pop_gray_pointer;
+
+            --stable 99.9999% of the time
+            s_push_synchronizer_s2 <= s_push_synchronizer_s1;
         end if;
     end process;
 
