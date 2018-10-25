@@ -28,8 +28,7 @@ entity fifo is
         clock_pop   : in  std_logic;
         data_out    : out std_logic_vector(data_width - 1 downto 0);
 
-        -- asynchronous reset 
-        -- NOTE: does not reset memory to zeros
+        -- asynchronous reset
         reset       : in  std_logic
     );
 end fifo;
@@ -72,7 +71,7 @@ begin
     begin
         s_pop_push_pointer(data_depth - 1) <= s_pop_synchronizer_s2(data_depth - 1);
 
-        for I in data_depth - 2 to 0 loop
+        for I in data_depth - 2 downto 0 loop
             s_pop_push_pointer(I) <= s_pop_synchronizer_s2(I) xor s_pop_push_pointer(I + 1);
         end loop;
     end process;
@@ -130,7 +129,7 @@ begin
     begin
         s_push_pop_pointer(data_depth - 1) <= s_push_synchronizer_s2(data_depth - 1);
 
-        for I in data_depth - 2 to 0 loop
+        for I in data_depth - 2 downto 0 loop
             s_push_pop_pointer(I) <= s_push_synchronizer_s2(I) xor s_push_pop_pointer(I + 1);
         end loop;
     end process;
