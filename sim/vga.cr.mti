@@ -10,7 +10,7 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Compiling architecture rtl of fifo
 ** Warning: C:/Users/Mitch/Documents/GitHub/fpga_vga/src/fifo.vhd(43): (vcom-1236) Shared variables must be of a protected type.
 
-} {} {}} C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd {2 {vcom -work work -2002 -explicit -stats=none C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd
+} {} {}} C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd {1 {vcom -work work -2002 -explicit -stats=none C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd
 Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  5 2016
 -- Loading package STANDARD
 -- Loading package TEXTIO
@@ -20,7 +20,5 @@ Model Technology ModelSim - Intel FPGA Edition vcom 10.5b Compiler 2016.10 Oct  
 -- Loading package STD_LOGIC_UNSIGNED
 -- Compiling entity vga_controller
 -- Compiling architecture rtl of vga_controller
-** Warning: C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd(61): (vcom-1272) Length of expected is 3; length of actual is 2.
-** Warning: C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd(124): (vcom-1272) Length of expected is 3; length of actual is 2.
 
 } {} {}}

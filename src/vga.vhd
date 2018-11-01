@@ -31,23 +31,75 @@ entity vga_controller is
 end vga_controller;
 
 architecture rtl of vga_controller is
-    signal s_vertical_sync      : std_logic;
-    signal s_vertical_counter   : std_logic_vector(11 downto 0);
-    signal s_vertical_state     : std_logic_vector(2 downto 0);
+    signal s_vertical_sync          : std_logic;
+    signal s_vertical_sync_delay    : std_logic;
+    signal s_vertical_counter       : std_logic_vector(11 downto 0);
+    signal s_vertical_state         : std_logic_vector(2 downto 0);
 
-    signal s_horizontal_sync : std_logic;
-    signal s_horizontal_counter : std_logic_vector(11 downto 0);
-    signal s_horizontal_state   : std_logic_vector(2 downto 0);
+    signal s_horizontal_sync        : std_logic;
+    signal s_horizontal_sync_delay  : std_logic;
+    signal s_horizontal_counter     : std_logic_vector(11 downto 0);
+    signal s_horizontal_state       : std_logic_vector(2 downto 0);
 
-    signal s_blank              : std_logic;
-    signal s_fifo_read          : std_logic;
+    signal s_blank                  : std_logic;
+    signal s_fifo_read              : std_logic;
+    signal s_empty                  : std_logic;
+
+    signal s_rgb_in                 : std_logic_vector(23 downto 0);
+    signal s_rgb_out                : std_logic_vector(23 downto 0);
+
+    component fifo
+    generic(
+        -- input / ouput data width of fifo
+        data_width : integer := 8;
+
+        -- depth of fifo
+        -- 2^n = fifo data depth
+        -- Example: 2^8 = 256 values can be stored in fifo
+        data_depth : integer := 8
+    );
+
+    port(
+        -- push side of fifo
+        push        : in  std_logic;
+        full        : out std_logic;
+        clock_push  : in  std_logic;
+        data_in     : in  std_logic_vector(data_width - 1 downto 0);
+
+        -- pop side of fifo
+        pop         : in  std_logic;
+        empty       : out std_logic;
+        clock_pop   : in  std_logic;
+        data_out    : out std_logic_vector(data_width - 1 downto 0);
+
+        -- asynchronous reset
+        reset       : in  std_logic
+    );
+    end component;
 begin
 
-    --routing signals to I/O
-    horizontal_sync <= '1' xor s_horizontal_sync;
-    vertical_sync <= '1' xor s_vertical_sync;
-    blank <= not s_blank;
+    --disabling sync on the DAC
     sync <= '1';
+
+    s_rgb_in(23 downto 0) <= red_in(7 downto 0) & green_in(7 downto 0) & blue_in(7 downto 0);
+    red_out(7 downto 0) <= s_rgb_out(23 downto 16);
+    green_out(7 downto 0) <= s_rgb_out(15 downto 8);
+    blue_out(7 downto 0) <= s_rgb_out(7 downto 0);
+
+    --declaring fifo instance in the design
+    u1  : fifo  generic map(data_width => 24, data_depth => 10)
+                   port map(push => write_enable,
+                            full => buffer_full,
+                            clock_push => data_clock,
+                            data_in => s_rgb_in,
+                            pop => s_fifo_read,
+                            empty => s_empty,
+                            clock_pop => pixel_clock,
+                            data_out => s_rgb_out,
+                            reset => reset
+                            );
+
+    
 
     --horizonal sync generator
     --responsible for generating the horizontal timings 
@@ -58,7 +110,7 @@ begin
         constant horizontal_pixels      : std_logic_vector(11 downto 0) := "001010000000";  
     begin
         if reset = '1' then
-            s_horizontal_state <= "00";
+            s_horizontal_state <= "000";
             s_horizontal_counter <= X"000";
             s_horizontal_sync <= '0';
         elsif rising_edge(pixel_clock) then
@@ -121,7 +173,7 @@ begin
         constant vertical_pixels      : std_logic_vector(11 downto 0) := "000111100000";
     begin
         if reset = '1' then
-            s_vertical_state <= "00";
+            s_vertical_state <= "000";
             s_vertical_counter <= X"000";
             s_vertical_sync <= '0';
         elsif rising_edge(pixel_clock) then
@@ -188,27 +240,35 @@ begin
 
     --blank output
     --makes screen black
-    process(pixel_clock, s_horizontal_state, s_vertical_state)
-    begin
-        if rising_edge(pixel_clock) then
-            if (s_horizontal_state = "000") or (s_horizontal_state = "001") or (s_horizontal_state = "010") or (s_vertical_state = "000") or (s_vertical_state = "001") or (s_vertical_state = "010") then
-                s_blank <= '1';
-            else
-                s_blank <= '0';
-            end if;
-        end if;
-    end process;
-
     --controll of pixel buffer
     --reading of fifo is delayed by 1 in reference to blank
     process(pixel_clock, s_horizontal_state, s_vertical_state)
     begin
         if rising_edge(pixel_clock) then
-            if s_blank = '1' then
-                s_fifo_read <= '1';
-            else
+            --is the system in any syncing phase?
+            if (s_horizontal_state = "000") or (s_horizontal_state = "001") or (s_horizontal_state = "010") or (s_vertical_state = "000") or (s_vertical_state = "001") or (s_vertical_state = "010") then
+                s_blank <= '1';
                 s_fifo_read <= '0';
+            else
+                s_blank <= '0';
+                s_fifo_read <= '1';
             end if;
+
+            --delays blank to match the fifo output
+            blank <= not s_blank;
+
+        end if;
+    end process;
+
+
+    --delay of the sync signals to match the blank and fifo outputs
+    process(pixel_clock)
+    begin
+        if rising_edge(pixel_clock) then
+            s_horizontal_sync_delay <= s_horizontal_sync;
+            s_vertical_sync_delay <= s_vertical_sync;
+            horizontal_sync <= '1' xor s_horizontal_sync_delay;
+            vertical_sync <= '1' xor s_vertical_sync_delay;
         end if;
     end process;
 end rtl;
