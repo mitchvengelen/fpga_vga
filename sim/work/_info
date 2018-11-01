@@ -24,9 +24,9 @@ VOHAGdYV?DaMl]igk_^IfJ3
 !s100 ^<j`mD?F]jnk1WdlO8XM80
 Z9 OV;C;10.5b;63
 32
-Z10 !s110 1541063946
+Z10 !s110 1541069185
 !i10b 1
-Z11 !s108 1541063945.000000
+Z11 !s108 1541069185.000000
 Z12 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Mitch/Documents/GitHub/fpga_vga/src/fifo.vhd|
 Z13 !s107 C:/Users/Mitch/Documents/GitHub/fpga_vga/src/fifo.vhd|
 !i113 1
@@ -54,7 +54,7 @@ R13
 R14
 R15
 Evga_controller
-Z16 w1541063925
+Z16 w1541069033
 R2
 R3
 R4
@@ -69,11 +69,11 @@ Vic;46bYek3K5ISKI4F]Wa1
 !s100 KRPCKY2eYj@bU1MS>e0TT2
 R9
 32
-R10
+Z19 !s110 1541069186
 !i10b 1
-Z19 !s108 1541063946.000000
-Z20 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd|
-Z21 !s107 C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd|
+Z20 !s108 1541069186.000000
+Z21 !s90 -reportprogress|300|-work|work|-2002|-explicit|-stats=none|C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd|
+Z22 !s107 C:/Users/Mitch/Documents/GitHub/fpga_vga/src/vga.vhd|
 !i113 1
 R14
 R15
@@ -83,18 +83,18 @@ R3
 R4
 R5
 R6
-Z22 DEx4 work 14 vga_controller 0 22 ic;46bYek3K5ISKI4F]Wa1
-l79
+Z23 DEx4 work 14 vga_controller 0 22 ic;46bYek3K5ISKI4F]Wa1
+l82
 L33
-VFUNBaT8^1lCEnfDk@XQAj2
-!s100 FJ`7KOAMd?coje_MiF3LG3
+Z24 VEdbGnA:1hz>kbzfXJSnVJ1
+Z25 !s100 515Z:^BRN@YeMaBzGDH@_1
 R9
 32
-R10
-!i10b 1
 R19
+!i10b 1
 R20
 R21
+R22
 !i113 1
 R14
 R15
