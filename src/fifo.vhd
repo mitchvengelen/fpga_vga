@@ -49,6 +49,7 @@ architecture rtl of fifo is
     signal s_push_synchronizer_s1   : std_logic_vector(data_depth - 1 downto 0);
     signal s_push_synchronizer_s2   : std_logic_vector(data_depth - 1 downto 0);
     signal s_push_gray_pointer      : std_logic_vector(data_depth - 1 downto 0);
+    signal s_push_gray_pointer_delay: std_logic_vector(data_depth - 1 downto 0);
 
     -- all signals for the pop side of fifo
     signal s_pop_pointer           : std_logic_vector(data_depth - 1 downto 0);
@@ -57,6 +58,7 @@ architecture rtl of fifo is
     signal s_pop_synchronizer_s1   : std_logic_vector(data_depth - 1 downto 0);
     signal s_pop_synchronizer_s2   : std_logic_vector(data_depth - 1 downto 0);
     signal s_pop_gray_pointer      : std_logic_vector(data_depth - 1 downto 0);
+    signal s_pop_gray_pointer_delay: std_logic_vector(data_depth - 1 downto 0);
 
 begin
 
@@ -85,6 +87,8 @@ begin
             s_pop_synchronizer_s1 <= (others => '0');
             s_pop_synchronizer_s2 <= (others => '0');
 
+            s_pop_gray_pointer_delay <= (others => '0');
+
             data_out <= (others => '0');
         elsif rising_edge(clock_pop) then
             if s_pop_state = '0' then
@@ -110,8 +114,10 @@ begin
                 end if;
             end if;
 
+            s_pop_gray_pointer_delay <= s_pop_gray_pointer;
+
             --meta stable input
-            s_pop_synchronizer_s1 <= s_push_gray_pointer;
+            s_pop_synchronizer_s1 <= s_push_gray_pointer_delay;
 
             --stable 99.9999% of the time
             s_pop_synchronizer_s2 <= s_pop_synchronizer_s1;
@@ -143,6 +149,8 @@ begin
             s_push_synchronizer_s1 <= (others => '0');
             s_push_synchronizer_s2 <= (others => '0');
 
+            s_push_gray_pointer_delay <= (others => '0');
+
         elsif rising_edge(clock_push) then
             if s_push_state = '0' then
                 --fifo is not full
@@ -167,8 +175,10 @@ begin
                 end if;
             end if;
 
+            s_push_gray_pointer_delay <= s_push_gray_pointer;
+
             --meta stable input
-            s_push_synchronizer_s1 <= s_pop_gray_pointer;
+            s_push_synchronizer_s1 <= s_pop_gray_pointer_delay;
 
             --stable 99.9999% of the time
             s_push_synchronizer_s2 <= s_push_synchronizer_s1;
