@@ -80,7 +80,7 @@ architecture rtl of vga_controller is
 begin
 
     --disabling sync on the DAC
-    sync <= '1';
+    sync <= '0';
 
     s_rgb_in(23 downto 0) <= red_in(7 downto 0) & green_in(7 downto 0) & blue_in(7 downto 0);
     red_out(7 downto 0) <= s_rgb_out(23 downto 16);
