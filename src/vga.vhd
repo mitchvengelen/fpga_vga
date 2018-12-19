@@ -52,12 +52,12 @@ architecture rtl of vga_controller is
     component fifo
     generic(
         -- input / ouput data width of fifo
-        data_width : integer := 8;
+        data_width : integer := 24;
 
         -- depth of fifo
         -- 2^n = fifo data depth
         -- Example: 2^8 = 256 values can be stored in fifo
-        data_depth : integer := 8
+        data_depth : integer := 10
     );
 
     port(
@@ -77,16 +77,19 @@ architecture rtl of vga_controller is
         reset       : in  std_logic
     );
     end component;
+	 
 begin
 
-    --disabling sync on the DAC
+    --enable sync on the DAC to lower green value
+	 --because the sync is on the green channel
     sync <= '0';
 
     s_rgb_in(23 downto 0) <= red_in(7 downto 0) & green_in(7 downto 0) & blue_in(7 downto 0);
-    red_out(7 downto 0) <= s_rgb_out(23 downto 16);
-    green_out(7 downto 0) <= s_rgb_out(15 downto 8);
-    blue_out(7 downto 0) <= s_rgb_out(7 downto 0);
 
+    red_out(7 downto 0) <= s_rgb_out(23 downto 16);
+	green_out(7 downto 0) <= s_rgb_out(15 downto 8);
+	blue_out(7 downto 0) <= s_rgb_out(7 downto 0);
+	 
     --declaring fifo instance in the design
     u1  : fifo  generic map(data_width => 24, data_depth => 10)
                    port map(push => write_enable,
